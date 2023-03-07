@@ -1,46 +1,48 @@
-import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import "./User.css"
+/* eslint-disable react/react-in-jsx-scope */
+import { useState, useEffect, type ReactElement } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import './User.css'
 interface user {
-    id: number,
-    email: string,
-    username: string,
-    last_name: string,
-    fist_name: string,
-    password_: string
+  id: number
+  email: string
+  username: string
+  last_name: string
+  fist_name: string
+  password_: string
 }
-export default function User(){
-    const [user, setUser] = useState<user>();
-    let {id} = useParams();
-    const navigate = useNavigate();
-    useEffect(()=>{ async function requestfunc(){
-        try{
-        const token = localStorage.getItem("JsonWebToken");
-        let answer = await fetch("http://localhost:5001/user", {
-            method: "POST",
-            body:JSON.stringify({
-                id: id
-            }),
-            headers: { 
-                "Content-Type": "application/json",
-                "Authorization" : token as string
-            },
-        });
-        const result = await answer.json();
-        console.log(result);
-        if(answer.status === 200){
-            setUser(result as user);
-            return
+export default function User (): ReactElement {
+  const [user, setUser] = useState<user>()
+  const { id } = useParams()
+  const navigate = useNavigate()
+  useEffect(() => {
+    async function requestfunc (): Promise<void> {
+      try {
+        const token = localStorage.getItem('JsonWebToken')
+        const answer = await fetch('http://localhost:5001/user', {
+          method: 'POST',
+          body: JSON.stringify({
+            id
+          }),
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: token as string
+          }
+        })
+        const result = await answer.json()
+        console.log(result)
+        if (answer.status === 200) {
+          setUser(result as user)
+          return
         }
-        }
-        catch{
-            navigate("/login");
-        }
+      } catch {
+        navigate('/login')
+      }
     }
-    requestfunc();
-    }, []
-    )
-    return(
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    requestfunc()
+  }, []
+  )
+  return (
         <>
         <div className="card-client">
     <div className="user-picture">
@@ -48,7 +50,7 @@ export default function User(){
             <path d="M224 256c70.7 0 128-57.31 128-128s-57.3-128-128-128C153.3 0 96 57.31 96 128S153.3 256 224 256zM274.7 304H173.3C77.61 304 0 381.6 0 477.3c0 19.14 15.52 34.67 34.66 34.67h378.7C432.5 512 448 496.5 448 477.3C448 381.6 370.4 304 274.7 304z"></path>
         </svg>
     </div>
-    <p className="name-client"> {user?.fist_name + " " + user?.last_name}
+    <p className="name-client"> {String(user?.fist_name) + ' ' + String(user?.last_name)}
         <span>{user?.email}
         </span>
     </p>
@@ -80,5 +82,5 @@ export default function User(){
     </div>
 </div>
         </>
-    );
+  )
 }
