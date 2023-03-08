@@ -18,6 +18,9 @@ services:
        dockerfile: ./server.Dockerfile
     depends_on:
       - database
+    environment:
+      - ACCESS_TOKEN_SECRET=${ACCESS_TOKEN_SECRET}
+      - REFRESH_TOKEN_SECRET=${REFRESH_TOKEN_SECRET}
   loginpage:
     image: loginpage
     build:

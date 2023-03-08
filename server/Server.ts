@@ -9,7 +9,7 @@ import jwt from 'jsonwebtoken'
 import * as dotenv from 'dotenv'
 import { join } from 'node:path'
 
-dotenv.config({ path: join(__dirname, '/.env') })
+dotenv.config({ path: join('/server/.env') })
 
 const port = 5001
 const app = express()
@@ -20,9 +20,9 @@ interface user {
   id: number
   email: string
   username: string
-  last_name: string
-  fist_name: string
-  password_: string
+  firstname: string
+  lastname: string
+  password: string
   iat: number
 }
 const pool = new Pool({
@@ -39,7 +39,7 @@ app.post('/login', async function (req: Request, res: Response) {
   const result = await pool.query('select * from userstable')
   const users = result.rows as user[]
   for (let i = 0; i < users.length; i++) {
-    if ((users[i].email === username || users[i].username === username) && password === users[i].password_) {
+    if ((users[i].email === username || users[i].username === username) && password === users[i].password) {
       const accesToken = jwt.sign(users[i], process.env.ACCESS_TOKEN_SECRET as string)
       return res.status(200).send(JSON.stringify({
         id: users[i].id,
@@ -66,18 +66,23 @@ app.post('/users', async function (req: Request, res: Response) {
 
 app.post('/register', async function (req: Request, res: Response) {
   const user = req.body.user as user
-  const result = await pool.query('select * from userstable')
-  const users = result.rows as user[]
-  if (users.find(element => { return (element.username === user.username) || (element.email === user.email) }) !== undefined || !validateUser(user)) {
+  console.log(req.body)
+  if (!validateUser(user)) {
     return res.status(400).send(JSON.stringify({ message: 'Error' }))
   }
-  await pool.query(`insert into userstable(email, username, last_name, fist_name, password_) values('${user.email}', '${user.username}', '${user.last_name}', '${user.fist_name}', '${user.password_}')`)
-  return res.status(200).send(JSON.stringify({ message: 'Success' }))
+  try {
+    await pool.query(`insert into userstable(email, username, lastname, firstname, password) values('${user.email}', '${user.username}', '${user.lastname}', '${user.firstname}', '${user.password}')`)
+    return res.status(200).send(JSON.stringify({ message: 'Success' }))
+  } catch (e) {
+    console.log(e)
+    return res.status(400).send(JSON.stringify({ message: 'Error' }))
+  }
 })
 
 function validateUser (user: user): boolean {
+  console.log(user)
   const isemailvalid = user.email.match(/^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/)
-  const otheritemsvalid = user.fist_name.length > 0 && user.last_name.length > 0 && user.password_.length > 0 && user.username.length > 0
+  const otheritemsvalid = user.firstname.length > 0 && user.lastname.length > 0 && user.password.length > 0 && user.username.length > 0
   return (isemailvalid != null) && otheritemsvalid
 };
 

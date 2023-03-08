@@ -4,7 +4,7 @@ WORKDIR /usr/src/app
 COPY ["package.json", "package-lock.json*", "npm-shrinkwrap.json*", "./"]
 RUN npm install --production --silent && mv node_modules ../
 COPY . .
-RUN chown -R node /usr/src/app
 EXPOSE 5001
-USER node
-CMD ["npm", "run", "server"]
+RUN chmod +x /usr/src/app/docker-entrypoint.sh
+ENTRYPOINT [ "sh" ]
+CMD ["./docker-entrypoint.sh"]
